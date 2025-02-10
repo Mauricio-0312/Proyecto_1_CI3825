@@ -24,21 +24,68 @@ int main() {
             print_path(current);
             printf("\n");
         } else if (strncmp(input, "ls", 2) == 0) {
-            list_directory(current);
+            int detailed = strstr(input, "-l") != NULL;
+            list_directory(current, detailed);
         } else if (strncmp(input, "mkdir ", 6) == 0) {
             char* dir_name = input + 6;
-            nodeStruct* new_dir = create_node(dir_name, DIR);
-            add_child(current, new_dir);
+            if (find_node(current, dir_name)) {
+                printf("El directorio ya existe.\n");
+            } else {
+                nodeStruct* new_dir = create_node(dir_name, DIR);
+                add_child(current, new_dir);
+            }
         } else if (strncmp(input, "touch ", 6) == 0) {
             char* file_name = input + 6;
-            nodeStruct* new_file = create_node(file_name, FILE);
-            add_child(current, new_file);
+            if (find_node(current, file_name)) {
+                printf("El archivo ya existe.\n");
+            } else {
+                nodeStruct* new_file = create_node(file_name, FIL);
+                add_child(current, new_file);
+            }
+        } else if (strncmp(input, "cd ", 3) == 0) {
+            char* path = input + 3;
+            nodeStruct* new_dir = change_directory(current, path);
+            if (new_dir) {
+                current = new_dir;
+            } else {
+                printf("Directorio no encontrado.\n");
+            }
+        } else if (strncmp(input, "rm ", 3) == 0) {
+            char* file_name = input + 3;
+            nodeStruct* file = find_node(current, file_name);
+            if (file && file->type == FIL) {
+                delete_node(file);
+            } else {
+                printf("Archivo no encontrado o es un directorio.\n");
+            }
+        } else if (strncmp(input, "rmdir ", 6) == 0) {
+            char* dir_name = input + 6;
+            nodeStruct* dir = find_node(current, dir_name);
+            if (dir && dir->type == DIR && !dir->child) {
+                delete_node(dir);
+            } else {
+                printf("Directorio no encontrado o no está vacío.\n");
+            }
+        } else if (strncmp(input, "wrts ", 5) == 0) {
+            char* filename = input + 5;
+            FILE* file = fopen(filename, "w");
+            if (file) {
+                write_fs(root, file);
+                fclose(file);
+                printf("Sistema de archivos guardado en %s.\n", filename);
+            } else {
+                printf("No se pudo abrir el archivo para escritura.\n");
+            }
         } else if (strncmp(input, "help", 4) == 0) {
             printf("Comandos disponibles:\n");
             printf("mkdir <nombre_directorio>\n");
             printf("touch <nombre_archivo>\n");
-            printf("ls\n");
+            printf("ls [-l]\n");
             printf("pwd\n");
+            printf("cd <nombre_directorio>\n");
+            printf("rm <nombre_archivo>\n");
+            printf("rmdir <nombre_directorio>\n");
+            printf("wrts <nombre_archivo>\n");
             printf("exit\n");
         } else {
             printf("Comando no reconocido. Escribe 'help' para ver los comandos disponibles.\n");
