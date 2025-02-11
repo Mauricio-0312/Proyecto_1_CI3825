@@ -26,7 +26,8 @@ SRCOBJS=	$(SRC:.c=.o)
 all:		$(PROG)
 
 $(PROG):	$(SRCOBJS)
-		$(CC) $(CFLAGS) $(SRCOBJS) $(LIBS) -o $@ 
+			$(CC) $(CFLAGS) $(SRCOBJS) $(LIBS) -o $@ 
+			rm -f $(SRCOBJS)
 
 .c.o:
 		$(CC) -c $(CFLAGS) $< -o $@
