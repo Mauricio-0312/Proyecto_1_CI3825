@@ -19,18 +19,13 @@ SRC=		node.c main.c
 
 SRCOBJS=	$(SRC:.c=.o)
 
-#LIBS=		-lm
-
 .SUFFIXES:.c .o
 
 all:		$(PROG)
 
 $(PROG):	$(SRCOBJS)
-			$(CC) $(CFLAGS) $(SRCOBJS) $(LIBS) -o $@ 
+			$(CC) $(CFLAGS) $(SRCOBJS) -o $@ 
 			rm -f $(SRCOBJS)
 
 .c.o:
 		$(CC) -c $(CFLAGS) $< -o $@
-
-clean:
-		rm -f $(PROG) *.o simsf
