@@ -10,11 +10,14 @@ int main() {
     nodeStruct* root = create_node("", DIR);  // Directorio raíz
     nodeStruct* current = root;
 
-    printf("Simulador de Sistema de Archivos UNIX\n");
+    printf("\n");
+    printf("\033[1mSimulador de Sistema de Archivos UNIX\033[0m\n");
+    printf("\n");
     printf("Escribe 'help' para ver los comandos disponibles.\n");
+    
 
     while (1) {
-        printf("> ");
+        printf("\033[1m>\033[0m");
         fgets(input, MAX_INPUT, stdin);
         input[strcspn(input, "\n")] = 0;  // Eliminar el salto de línea
 
