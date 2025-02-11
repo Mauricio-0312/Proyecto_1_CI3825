@@ -1,6 +1,8 @@
 #ifndef NODE_H
 #define NODE_H
 
+typedef enum { DIR, FIL } TYPEFILE;
+
 typedef struct nodeStruct {
     TYPEFILE type;
     struct nodeStruct* parent;
@@ -9,7 +11,6 @@ typedef struct nodeStruct {
     char* name;
     time_t creation_time;
 } nodeStruct;
-typedef enum { DIR, FIL } TYPEFILE;
 
 // Declaración de funciones
 nodeStruct* create_node(const char* name, TYPEFILE type);
