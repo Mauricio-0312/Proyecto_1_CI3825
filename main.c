@@ -5,8 +5,88 @@
 
 #define MAX_INPUT 256
 
-int main() {
+// Struct para almacenar palabras
+typedef struct {
+    char* path;
+    char type[2];
+} file_properties;
+
+file_properties get_file_properties(const char* str) {
+    char* copy = strdup(str);
+    char* space_pos = strchr(copy, ' ');
+    char* path;
+    char* type;
+    file_properties properties = {NULL, ""};
+
+    if (space_pos != NULL) {
+        int index = space_pos - copy;
+        path = strndup(copy, index);
+        type = strdup(copy + index + 3);
+        properties.path = path;
+        strncpy(properties.type, type, sizeof(properties.type) - 1);
+        free(type);
+    } else {
+        path = strdup(copy);
+        properties.path = path;
+        strncpy(properties.type, "", sizeof(properties.type) - 1);
+        
+    }
+    
+    free(copy);
+    return properties;
+}
+
+
+int main(int argc, char *argv[]) {
     char input[MAX_INPUT];
+    nodeStruct* root = create_node("", DIR);
+
+    FILE* file1 = fopen(argv[1], "r");
+
+     if(file1 != NULL) {
+        char line[256];
+        
+        while (fgets(line, sizeof(line), file1)) {
+            
+            file_properties line_properties = get_file_properties(line);
+
+            // Touch 
+            if (strncmp(input, "touch ", 6) == 0) {
+            char* file_name = input + 6;
+            if (find_node(current, file_name)) {
+                printf("El archivo ya existe.\n");
+            } else {
+                nodeStruct* new_file = create_node(file_name, FIL);
+                add_child(current, new_file);
+            }
+
+            // Mkdir
+            
+            if (strncmp(input, "mkdir ", 6) == 0) {
+            char* dir_name = input + 6;
+            if (find_node(current, dir_name)) {
+                printf("El directorio ya existe.\n");
+            } else {
+                nodeStruct* new_dir = create_node(dir_name, DIR);
+                add_child(current, new_dir);
+            }
+
+            
+        }
+
+        // Cierra el archivo
+        fclose(file1);
+    }
+
+    
+
+    
+    
+   
+    
+
+
+
     nodeStruct* root = create_node("", DIR);  // Directorio raíz
     nodeStruct* current = root;
 
