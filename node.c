@@ -68,7 +68,7 @@ void print_path(nodeStruct* node) {
         print_path(node->parent);
     }
     if (strlen(node->name) > 0) {
-        printf("/%s", node->name);
+        printf("%s", node->name);
     }
 }
 

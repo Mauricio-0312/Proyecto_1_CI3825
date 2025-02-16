@@ -2,12 +2,3 @@
 /home   D
 /home/katy   D
 /var   D
-/var/e.log   F
-/home/lear   D
-/dev   D
-/dev/stdout   F
-/home/lear/a.pdf   F
-/dev/stderr   F
-/home/lear/c.txt   F
-/home/lear/Docs   D
-/dev/stdin   F
