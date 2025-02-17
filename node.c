@@ -4,6 +4,17 @@
 #include <time.h>
 #include "node.h"
 
+typedef struct nodeStruct nodeStruct;
+
+struct nodeStruct {
+    TYPEFILE type;
+    struct nodeStruct* parent;
+    struct nodeStruct* child;
+    struct nodeStruct* sibling;
+    char* name;
+    time_t creation_time;
+}; //nodeStruct
+
 nodeStruct* create_node(const char* name, TYPEFILE type) {
     nodeStruct* new_node = (nodeStruct*)malloc(sizeof(nodeStruct));
     new_node->name = strdup(name);
@@ -57,7 +68,7 @@ void list_directory(nodeStruct* dir, int detailed) {
         if (detailed) {
             char time_str[20];
             strftime(time_str, sizeof(time_str), "%H:%M-%d/%m/%Y", localtime(&child->creation_time));
-            printf("%s\t%s\t%s\n", (child->type == DIR ? "D" : "F"), time_str, child->name);
+            printf("\033[0;32m%s\033[0m\t%s\t%s\n", (child->type == DIR ? "D" : "F"), time_str, child->name);
         } else {
             printf("%s\t%s\n", (child->type == DIR ? "DIR" : "FILE"), child->name);
         }
@@ -210,4 +221,36 @@ void write_fs(nodeStruct* root, FILE* file) {
     write_fs(root->child, file);
 
     write_fs(root->sibling, file);
+}
+
+void clean(nodeStruct *node) { 
+    
+    if(node != NULL){
+
+       
+        clean(node->child);
+       
+        clean(node->sibling);
+
+        
+        free(node->name);
+        free(node);
+    }
+}
+
+void removeFIL(nodeStruct *node){
+    printf("Borrando archivo: \n");
+    printf("%s\n", node->name); 
+    delete_node(node);
+}
+
+void removeDIR(nodeStruct* node){
+    
+    if(!node->child){
+        delete_node(node);
+
+    }else{
+        printf("Error: Directorio no está vacío.\n");
+    }
+    
 }

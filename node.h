@@ -2,15 +2,17 @@
 #define NODE_H
 
 typedef enum { DIR, FIL } TYPEFILE;
+typedef struct nodeStruct nodeStruct;
+struct nodeStruct;
 
-typedef struct nodeStruct {
-    TYPEFILE type;
-    struct nodeStruct* parent;
-    struct nodeStruct* child;
-    struct nodeStruct* sibling;
-    char* name;
-    time_t creation_time;
-} nodeStruct;
+// typedef struct nodeStruct {
+//     TYPEFILE type;
+//     struct nodeStruct* parent;
+//     struct nodeStruct* child;
+//     struct nodeStruct* sibling;
+//     char* name;
+//     time_t creation_time;
+// } nodeStruct;
 
 // Declaración de funciones
 nodeStruct* create_node(const char* name, TYPEFILE type);
@@ -27,6 +29,9 @@ nodeStruct* change_complex_directory(nodeStruct* current, nodeStruct* root, cons
 nodeStruct* find_nested_node(nodeStruct* current, nodeStruct* root, const char* path, TYPEFILE targetType);
 nodeStruct* create_nested_node(nodeStruct* current, nodeStruct* root, const char* path, TYPEFILE targetType);
 char* get_path(nodeStruct* node);
+void clean(nodeStruct *node);
+void removeDIR(nodeStruct* node);
+void removeFIL(nodeStruct* node);
 
 
 
