@@ -1,3 +1,4 @@
 /       D
+/home
 /home/lear   D
 /home/lear/a.pdf    F

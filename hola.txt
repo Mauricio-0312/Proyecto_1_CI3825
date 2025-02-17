@@ -11,3 +11,4 @@
 /home/lear/c.txt    F
 /home/lear/Docs     D
 /dev/stdin          F
+/home/katy/hola.txt F

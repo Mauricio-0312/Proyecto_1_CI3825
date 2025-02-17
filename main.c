@@ -95,7 +95,6 @@ int main(int argc, char *argv[]) {
             char tipo = line[k2];
             
             
-            
             char *prefix;
             char *last_token;
             split(copy, &prefix, &last_token);
@@ -170,14 +169,18 @@ int main(int argc, char *argv[]) {
         fgets(input, MAX_INPUT, stdin);
         input[strcspn(input, "\n")] = 0;  // Eliminar el salto de línea
 
+        // exit
         if (strncmp(input, "exit", 4) == 0) {
             break;
+        // pwd
         } else if (strncmp(input, "pwd", 3) == 0) {
             print_path(current);
             printf("\n");
+        // ls
         } else if (strncmp(input, "ls", 2) == 0) {
             int detailed = strstr(input, "-l") != NULL;
             list_directory(current, detailed);
+        // mkdir
         } else if (strncmp(input, "mkdir ", 6) == 0) {
             char* dir_name = input + 6;
             if (find_node(current, dir_name)) {
@@ -186,6 +189,7 @@ int main(int argc, char *argv[]) {
                 nodeStruct* new_dir = create_node(dir_name, DIR);
                 add_child(current, new_dir);
             }
+        // touch
         } else if (strncmp(input, "touch ", 6) == 0) {
             char* file_name = input + 6;
             if (find_node(current, file_name)) {
@@ -194,6 +198,7 @@ int main(int argc, char *argv[]) {
                 nodeStruct* new_file = create_node(file_name, FIL);
                 add_child(current, new_file);
             }
+        // cd
         } else if (strncmp(input, "cd ", 3) == 0) {
             char* path = input + 3;
             nodeStruct* new_dir = change_directory(current, path);
@@ -202,6 +207,7 @@ int main(int argc, char *argv[]) {
             } else {
                 printf("Directorio no encontrado.\n");
             }
+        // rm
         } else if (strncmp(input, "rm ", 3) == 0) {
             char* file_name = input + 3;
             nodeStruct* file = find_node(current, file_name);
@@ -210,6 +216,7 @@ int main(int argc, char *argv[]) {
             } else {
                 printf("Archivo no encontrado o es un directorio.\n");
             }
+        // rmdir
         } else if (strncmp(input, "rmdir ", 6) == 0) {
             char* dir_name = input + 6;
             nodeStruct* dir = find_node(current, dir_name);
@@ -218,6 +225,7 @@ int main(int argc, char *argv[]) {
             } else {
                 printf("Directorio no encontrado o no está vacío.\n");
             }
+        // wrts
         } else if (strncmp(input, "wrts ", 5) == 0) {
             char* filename = input + 5;
             FILE* file = fopen(filename, "w");
@@ -228,6 +236,7 @@ int main(int argc, char *argv[]) {
             } else {
                 printf("No se pudo abrir el archivo para escritura.\n");
             }
+        // help
         } else if (strncmp(input, "help", 4) == 0) {
             printf("Comandos disponibles:\n");
             printf("mkdir <nombre_directorio>\n");
