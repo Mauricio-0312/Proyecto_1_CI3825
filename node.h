@@ -17,14 +17,16 @@ nodeStruct* create_node(const char* name, TYPEFILE type);
 void add_child(nodeStruct* parent, nodeStruct* child);
 void delete_node(nodeStruct* node);
 void list_directory(nodeStruct* dir, int detailed);
-void print_path(nodeStruct* node);
+// void print_path(nodeStruct* node);
 nodeStruct* change_single_directory(nodeStruct* current, const char* name, TYPEFILE targetType);
 nodeStruct* find_node(nodeStruct* parent, const char* name);
-void write_fs(nodeStruct* root, FILE* file);
+void write_fs(nodeStruct* root, FILE* file, char *path);
 void decodePath(char *path);
-// nodeStruct* change_complex_node(nodeStruct* current, nodeStruct* root, const char* path);
+nodeStruct* change_complex_directory(nodeStruct* current, nodeStruct* root, const char* path);
 // nodeStruct* find_nested_node(nodeStruct* current, nodeStruct* root, const char* path);
 nodeStruct* find_nested_node(nodeStruct* current, nodeStruct* root, const char* path, TYPEFILE targetType);
+nodeStruct* create_nested_node(nodeStruct* current, nodeStruct* root, const char* path, TYPEFILE targetType);
+char* get_path(nodeStruct* node);
 
 
 

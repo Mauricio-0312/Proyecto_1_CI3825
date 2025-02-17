@@ -59,17 +59,28 @@ void list_directory(nodeStruct* dir, int detailed) {
         child = child->sibling;
     }
 }
-
-void print_path(nodeStruct* node) {
+char* get_path(nodeStruct* node) {
     if (node->parent) {
-        print_path(node->parent);
-    }
-    if (strlen(node->name) > 0) {
-        if(node->name[0] != '/'){
-            printf("/%s", node->name);
-        }
+        char* parent_path = get_path(node->parent);
+        char* full_path = (char*)malloc(strlen(parent_path) + strlen(node->name) + 2);
+        sprintf(full_path, "%s/%s", parent_path, node->name);
+        free(parent_path);
+        return full_path;
+    } else {
+        return strdup("");
     }
 }
+
+// void print_path(nodeStruct* node) {
+//     if (node->parent) {
+//         print_path(node->parent);
+//     }
+//     if (strlen(node->name) > 0) {
+//         if(node->name[0] != '/'){
+//             printf("/%s", node->name);
+//         }
+//     }
+// }
 
 nodeStruct* find_node(nodeStruct* parent, const char* name) {
     nodeStruct* child = parent->child;
@@ -122,35 +133,35 @@ nodeStruct* change_single_directory(nodeStruct* current, const char* name, TYPEF
     return NULL;
 }
 
-// nodeStruct* change_complex_directory(nodeStruct* current, nodeStruct* root, const char* path) {
-//     // Encontrar la primera ocurrencia del separador '/'
-//     if (strlen(path) == 0){
-//         return current;
-//     }
+nodeStruct* change_complex_directory(nodeStruct* current, nodeStruct* root, const char* path) {
+    // Encontrar la primera ocurrencia del separador '/'
+    if (strlen(path) == 0){
+        return current;
+    }
 
-//     char *separator = strchr(path, '/');
+    char *separator = strchr(path, '/');
     
-//     if (separator != NULL) {
-//         // Terminar el primer segmento con '\0'
-//         *separator = '\0';
+    if (separator != NULL) {
+        // Terminar el primer segmento con '\0'
+        *separator = '\0';
         
-//         // Imprimir el primer segmento
-//         // printf("HOLA %s\n", path);
-//         // printf("%s %ld\n", path, strlen(path));
-//         nodeStruct* new_current;
-//         if (strlen(path) == 0){
-//             new_current = root;
-//         }else{
-//             // printf("HOLA 1%s\n", path);
-//             new_current = change_single_directory(current, path);
-//         }
+        // Imprimir el primer segmento
+        // printf("HOLA %s\n", path);
+        // printf("%s %ld\n", path, strlen(path));
+        nodeStruct* new_current;
+        if (strlen(path) == 0){
+            new_current = root;
+        }else{
+            // printf("HOLA 1%s\n", path);
+            new_current = change_single_directory(current, path, DIR);
+        }
         
-//         return change_complex_directory(new_current, root, separator + 1);
-//     } else {
-//         // printf("Else %s\n", path);
-//         return change_single_directory(current, path);
-//     }
-// }
+        return change_complex_directory(new_current, root, separator + 1);
+    } else {
+        // printf("Else %s\n", path);
+        return change_single_directory(current, path, DIR);
+    }
+}
 
 nodeStruct* find_nested_node(nodeStruct* current, nodeStruct* root, const char* path, TYPEFILE targetType) {
     // Encontrar la primera ocurrencia del separador '/'
@@ -172,17 +183,63 @@ nodeStruct* find_nested_node(nodeStruct* current, nodeStruct* root, const char* 
             new_current = change_single_directory(current, path, DIR);
         }
         
-        return find_nested_node(new_current, root, separator + 1);
+        return find_nested_node(new_current, root, separator + 1, targetType);
     } else {
+        
         return change_single_directory(current, path, targetType);
     }
 }
 
-void write_fs(nodeStruct* root, FILE* file) {
+nodeStruct* create_nested_node(nodeStruct* current, nodeStruct* root, const char* path, TYPEFILE targetType) {
+    // Encontrar la primera ocurrencia del separador '/'
+    if (strlen(path) == 0){
+        return current;
+    }
+
+    char *separator = strchr(path, '/');
+    
+    if (separator != NULL) {
+        // Terminar el primer segmento con '\0'
+        *separator = '\0';
+        
+        
+        nodeStruct* new_current;
+        if (strlen(path) == 0){
+            new_current = root;
+        }else{
+            new_current = change_single_directory(current, path, DIR);
+        }
+        
+        return create_nested_node(new_current, root, separator + 1, targetType);
+    } else {
+        nodeStruct* node = change_single_directory(current, path, targetType);
+        if (node) {
+            if (targetType == FIL){
+
+                printf("El archivo ya existe.\n");
+            }else{
+                printf("El directorio ya existe.\n");
+            }
+        } else {
+            nodeStruct* new_node = create_node(path, targetType);
+            add_child(current, new_node);
+            node = new_node;
+        }
+
+        return node;
+    }
+}
+
+void write_fs(nodeStruct* root, FILE* file, char *path) {
     if (!root) return;
+    
     char time_str[20];
+    char *new_path = root->parent != NULL ? get_path(root) : strdup("/");
+    
     strftime(time_str, sizeof(time_str), "%H:%M-%d/%m/%Y", localtime(&root->creation_time));
-    fprintf(file, "%s\t%s\t%s\n", root->name, time_str, root->type == DIR ? "D" : "F");
-    write_fs(root->child, file);
-    write_fs(root->sibling, file);
+    fprintf(file, "%s\t%s\t%s\t%s\n", root->name, time_str, root->type == DIR ? "D" : "F", new_path);
+
+    write_fs(root->child, file, path);
+
+    write_fs(root->sibling, file, path);
 }

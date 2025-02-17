@@ -174,35 +174,35 @@ int main(int argc, char *argv[]) {
             break;
         // pwd
         } else if (strncmp(input, "pwd", 3) == 0) {
-            if (current == root) {
-                printf("/");
-            } else {
-                print_path(current);
-            }
-            printf("\n");
+            char *path = current != root ? get_path(current) : strdup("/");
+
+            printf("%s\n", path);
         // ls
         } else if (strncmp(input, "ls", 2) == 0) {
             int detailed = strstr(input, "-l") != NULL;
-            list_directory(current, detailed);
+            char* path;
+            if (detailed) {
+                path = input + 6;
+            }else {
+                path = input + 3;
+            }
+
+            nodeStruct *dir = find_nested_node(current, root, path, DIR);
+            if (dir) {
+                list_directory(dir, detailed);
+            } else {
+                printf("Directorio no encontrado.\n");
+            }
         // mkdir
         } else if (strncmp(input, "mkdir ", 6) == 0) {
-            char* dir_name = input + 6;
-            if (find_node(current, dir_name)) {
-                printf("El directorio ya existe.\n");
-            } else {
-                nodeStruct* new_dir = create_node(dir_name, DIR);
-                add_child(current, new_dir);
-            }
+            char* dir_path = input + 6;
+            create_nested_node(current, root, dir_path, DIR);
+            
         // touch
         } else if (strncmp(input, "touch ", 6) == 0) {
             char* file_path = input + 6;
-            nodeStruct* file = find_nested_node(current, root, file_path, FIL);
-            if (file) {
-                printf("El archivo ya existe.\n");
-            } else {
-                nodeStruct* new_file = create_node(file_name, FIL);
-                add_child(current, new_file);
-            }
+            create_nested_node(current, root, file_path, FIL);
+            
         // cd
         } else if (strncmp(input, "cd ", 3) == 0) {
             char* path = input + 3;
@@ -228,7 +228,7 @@ int main(int argc, char *argv[]) {
         // rmdir
         } else if (strncmp(input, "rmdir ", 6) == 0) {
             char* dir_path = input + 6;
-            nodeStruct* dir = find_nested_node(current, root, dir_path, DIR)
+            nodeStruct* dir = find_nested_node(current, root, dir_path, DIR);
             if (dir) {
                 if(dir->type == DIR ){
 
@@ -248,7 +248,7 @@ int main(int argc, char *argv[]) {
             char* filename = input + 5;
             FILE* file = fopen(filename, "w");
             if (file) {
-                write_fs(root, file);
+                write_fs(root, file, root->name);
                 fclose(file);
                 printf("Sistema de archivos guardado en %s.\n", filename);
             } else {
