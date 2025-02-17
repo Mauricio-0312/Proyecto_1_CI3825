@@ -5,40 +5,6 @@
 
 #define MAX_INPUT 256
 
-// Struct para almacenar palabras
-typedef struct {
-    char* path;
-    char type[2];
-} file_properties;
-
-
-// Funcion que lee el archivo de texto
-file_properties get_file_properties(const char* str) {
-    char* copy = strdup(str);
-    char* space_pos = strchr(copy, ' ');
-    char* path;
-    char* type;
-    file_properties properties = {NULL, ""};
-
-    if (space_pos != NULL) {
-        int index = space_pos - copy;
-        path = strndup(copy, index);
-        type = strdup(copy + index + 3);
-        properties.path = path;
-        strncpy(properties.type, type, sizeof(properties.type) - 1);
-        free(type);
-    } else {
-        path = strdup(copy);
-        properties.path = path;
-        strncpy(properties.type, "", sizeof(properties.type) - 1);
-        
-    }
-    
-    free(copy);
-    return properties;
-}
-
-
 void split(const char* str, char **prefix, char **last_token){
     char delimiter[] = "/";
     char *token;
@@ -92,20 +58,47 @@ int main(int argc, char *argv[]) {
     FILE* file1 = fopen(argv[1], "r");
 
      if(file1 != NULL) {
-        char line[256];
+        char line[999];
         
         int line_number = 0;
-        while (fgets(line, sizeof(line), file1)) {
+        // Extraemos el path y tipo
+        while (fgets(line, sizeof(line), file1) != NULL) {
             line_number++;
             if (line_number == 1) {
-            continue;  // Saltar la primera línea
+            continue;  
             }
+            int k = 0;
+            while (line[k] != '\t' && line[k] != ' ') {
+                k++;
+            }
+
+            char *copy = (char*)malloc(k + 1);
+            if (copy == NULL) {
+                perror("Error al asignar memoria");
+                fclose(file1);
+                return 1;
+            }
+
+            int j = 0;
+            while (j < k) {
+                copy[j] = line[j];
+                j++;
+            }
+            copy[j] = '\0';
             
-            // Extraemos el path y tipo
-            file_properties line_properties = get_file_properties(line);
+
+            int k2 = k;
+            while (line[k2] == '\t' || line[k2] == ' ') {
+                k2++;
+            }
+
+            char tipo = line[k2];
+            
+            
+            
             char *prefix;
             char *last_token;
-            split(line_properties.path, &prefix, &last_token);
+            split(copy, &prefix, &last_token);
 
            
              printf("Prefijo: %s\n", prefix);
@@ -134,26 +127,17 @@ int main(int argc, char *argv[]) {
                 continue;
             }
 
-            if (line_properties.type[0] == 'F'){
+            if (tipo == 'F'){
                 nodeStruct* new_file = create_node(last_token, FIL);
                 add_child(current, new_file);
             }
             
-            if (line_properties.type[0] == 'D') {
+            if (tipo == 'D') {
                 nodeStruct* new_dir = create_node(last_token, DIR);
                 add_child(current, new_dir);
             }
 
-            // Touch 
-            // if (strncmp(input, "touch ", 6) == 0) {
-            // char* file_name = input + 6;
-            // if (find_node(current, file_name)) {
-            //     printf("El archivo ya existe.\n");
-            // } else {
-            //     nodeStruct* new_file = create_node(file_name, FIL);
-            //     add_child(current, new_file);
-            // }
-            // }
+        
 
             printf("\n");
             printf("LISTAMOS EL DIRECTORIO\n");
@@ -166,18 +150,8 @@ int main(int argc, char *argv[]) {
 
             current = root;
 
-            // Mkdir
             
-            // if (strncmp(input, "mkdir ", 6) == 0) {
-            // char* dir_name = input + 6;
-            // if (find_node(current, dir_name)) {
-            //     printf("El directorio ya existe.\n");
-            // } else {
-            //     nodeStruct* new_dir = create_node(dir_name, DIR);
-            //     add_child(current, new_dir);
-            // }
-            // }
-
+            free(copy);
             
         }
 

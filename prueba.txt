@@ -1,0 +1,3 @@
+/       D
+/home/lear   D
+/home/lear/a.pdf    F
