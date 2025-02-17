@@ -4,9 +4,6 @@
 #include <time.h>
 #include "node.h"
 
-
-
-
 nodeStruct* create_node(const char* name, TYPEFILE type) {
     nodeStruct* new_node = (nodeStruct*)malloc(sizeof(nodeStruct));
     new_node->name = strdup(name);
@@ -68,7 +65,11 @@ void print_path(nodeStruct* node) {
         print_path(node->parent);
     }
     if (strlen(node->name) > 0) {
-        printf("%s", node->name);
+        if(node->name[0] != '/'){
+            printf("/%s", node->name);
+        }else{
+            printf("%s", node->name);
+        }
     }
 }
 
@@ -83,18 +84,71 @@ nodeStruct* find_node(nodeStruct* parent, const char* name) {
     return NULL;
 }
 
-nodeStruct* change_directory(nodeStruct* current, const char* path) {
-    if (strcmp(path, "..") == 0) {
+
+// void decodePath(char *path) {
+//     // Encontrar la primera ocurrencia del separador '/'
+//     char *separator = strchr(path, '/');
+    
+//     if (separator != NULL) {
+//         // Terminar el primer segmento con '\0'
+//         *separator = '\0';
+        
+//         // Imprimir el primer segmento
+//         printf("%s\n", path);
+        
+//         // Llamar recursivamente para el resto del string
+//         decodePath(separator + 1);
+//     } else {
+//         // Imprimir el último segmento
+//         printf("%s\n", path);
+//     }
+// }
+
+
+nodeStruct* change_single_directory(nodeStruct* current, const char* name) {
+    // printf("Cambiando a %s\n", name);
+    if (strcmp(name, "..") == 0) {
         return current->parent ? current->parent : current;
-    } else if (strcmp(path, ".") == 0) {
+    } else if (strcmp(name, ".") == 0) {
         return current;
     } else {
-        nodeStruct* target = find_node(current, path);
+        nodeStruct* target = find_node(current, name);
         if (target && target->type == DIR) {
+            // printf("Cambio a %s\n", target->name);
             return target;
         }
     }
     return NULL;
+}
+
+nodeStruct* change_complex_directory(nodeStruct* current, nodeStruct* root, const char* path) {
+    // Encontrar la primera ocurrencia del separador '/'
+    if (strlen(path) == 0){
+        return current;
+    }
+
+    char *separator = strchr(path, '/');
+    
+    if (separator != NULL) {
+        // Terminar el primer segmento con '\0'
+        *separator = '\0';
+        
+        // Imprimir el primer segmento
+        // printf("HOLA %s\n", path);
+        // printf("%s %ld\n", path, strlen(path));
+        nodeStruct* new_current;
+        if (strlen(path) == 0){
+            new_current = root;
+        }else{
+            // printf("HOLA 1%s\n", path);
+            new_current = change_single_directory(current, path);
+        }
+        
+        return change_complex_directory(new_current, root, separator + 1);
+    } else {
+        // printf("Else %s\n", path);
+        return change_single_directory(current, path);
+    }
 }
 
 void write_fs(nodeStruct* root, FILE* file) {

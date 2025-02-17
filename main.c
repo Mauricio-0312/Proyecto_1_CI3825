@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
 
             if (strcmp(prefix, "") != 0){
                 printf("Entramos al if\n");
-                nodeStruct* new_current = change_directory(current, prefix);
+                nodeStruct* new_current = change_complex_directory(current, root, prefix);
                 if (new_current) {
                     current = new_current;
                 }
@@ -201,7 +201,7 @@ int main(int argc, char *argv[]) {
         // cd
         } else if (strncmp(input, "cd ", 3) == 0) {
             char* path = input + 3;
-            nodeStruct* new_dir = change_directory(current, path);
+            nodeStruct* new_dir = change_complex_directory(current, root, path);
             if (new_dir) {
                 current = new_dir;
             } else {
