@@ -8,25 +8,32 @@
 void split(const char* str, char **prefix, char **last_token){
     char delimiter[] = "/";
     char *token;
-    char *str_copy = strdup(str);  // Crear una copia de la cadena de entrada para no modificar el original
+    char *str_copy = strdup(str);  
+    // Crear una copia de la cadena de entrada para no modificar el original
     *prefix = (char *)malloc(strlen(str) + 1);
     *last_token = NULL;
 
     (*prefix)[0] = '\0';
 
-    // Si la cadena empieza con el delimitador, añadirlo al prefijo
-    //  if (str[0] == '/') {
-    //      strcat(*prefix, "/");
-    //  }
-
-
     // Obtener el primer token
     token = strtok(str_copy, delimiter);
+
+    size_t prefix_size = strlen(str) + 1;
 
     // Continuar obteniendo tokens hasta que no haya más, guardando el último token
     while (token != NULL) {
         *last_token = strdup(token);
         token = strtok(NULL, delimiter);
+
+        // Comprobamos si necesitamos más espacio en *prefix
+        size_t current_len = strlen(*prefix);
+        size_t new_len = current_len + strlen(*last_token) + 1;  // +1 por el '/'
+        if (new_len >= prefix_size) {
+            // Realocamos *prefix si es necesario
+            prefix_size = new_len + 1;  // +1 por el '\0'
+            *prefix = (char *)realloc(*prefix, prefix_size);
+        }
+
         if (token != NULL) {
             strcat(*prefix, *last_token);
             strcat(*prefix, "/");
@@ -35,7 +42,7 @@ void split(const char* str, char **prefix, char **last_token){
     }
 
     // Remover el último '/' si no hay tokens adicionales
-    if ((*prefix)[strlen(*prefix) - 1] == '/' && strlen(*prefix) != 1) {
+    if (strlen(*prefix) > 0 && (*prefix)[strlen(*prefix) - 1] == '/') {
         (*prefix)[strlen(*prefix) - 1] = '\0';
     }
    
@@ -45,6 +52,21 @@ void split(const char* str, char **prefix, char **last_token){
     // // Imprimir el prefijo y el último token
     // printf("Prefijo: %s\n", prefix);
     // printf("Último token: %s\n", last_token);
+}
+
+void clean( nodeStruct *node ){
+    
+    if(node != NULL){
+
+       
+        clean(node->child);
+       
+        clean(node->sibling);
+
+        
+        free(node->name);
+        free(node);
+    }
 }
 
 
@@ -100,11 +122,11 @@ int main(int argc, char *argv[]) {
             split(copy, &prefix, &last_token);
 
            
-             printf("Prefijo: %s\n", prefix);
-             printf("Ultimo: %s\n", last_token);
+            //  printf("Prefijo: %s\n", prefix);
+            //  printf("Ultimo: %s\n", last_token);
 
             if (strcmp(prefix, "") != 0){
-                printf("Entramos al if\n");
+                // printf("Entramos al if\n");
                 nodeStruct* new_current = change_complex_directory(current, root, prefix);
                 if (new_current) {
                     current = new_current;
@@ -115,14 +137,16 @@ int main(int argc, char *argv[]) {
 
             }
 
-            printf("Directorio actual: ");
-            print_path(current);
-            printf("\n");
+            // printf("Directorio actual: ");
+            // print_path(current);
+            // printf("\n");
 
             if (current == NULL) {
-                fprintf(stderr, "Error: No se pudo cambiar al directorio %s\n", prefix);
+                //fprintf(stderr, "Error: No se pudo cambiar al directorio %s\n", prefix);
+                printf("Error: No se pudo cambiar al directorio %s\n", prefix);
                 free(prefix);
                 free(last_token);
+                free(copy);
                 continue;
             }
 
@@ -136,14 +160,6 @@ int main(int argc, char *argv[]) {
                 add_child(current, new_dir);
             }
 
-        
-
-            printf("\n");
-            printf("LISTAMOS EL DIRECTORIO\n");
-            printf("\n");
-            list_directory(current, 0);
-            printf("\n");
-
             free(prefix);
             free(last_token);
 
@@ -151,6 +167,7 @@ int main(int argc, char *argv[]) {
 
             
             free(copy);
+            
             
         }
 
@@ -165,18 +182,20 @@ int main(int argc, char *argv[]) {
     
 
     while (1) {
-        printf("\033[1m>\033[0m");
+        printf("\033[1m> \033[0m");
         fgets(input, MAX_INPUT, stdin);
         input[strcspn(input, "\n")] = 0;  // Eliminar el salto de línea
 
         // exit
         if (strncmp(input, "exit", 4) == 0) {
+            clean(root);
             break;
         // pwd
         } else if (strncmp(input, "pwd", 3) == 0) {
             char *path = current != root ? get_path(current) : strdup("/");
-
             printf("%s\n", path);
+            free(path);
+
         // ls
         } else if (strncmp(input, "ls", 2) == 0) {
             int detailed = strstr(input, "-l") != NULL;
@@ -248,7 +267,7 @@ int main(int argc, char *argv[]) {
             char* filename = input + 5;
             FILE* file = fopen(filename, "w");
             if (file) {
-                write_fs(root, file, root->name);
+                write_fs(root, file); 
                 fclose(file);
                 printf("Sistema de archivos guardado en %s.\n", filename);
             } else {

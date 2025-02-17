@@ -14,6 +14,11 @@ nodeStruct* create_node(const char* name, TYPEFILE type) {
 }
 
 void add_child(nodeStruct* parent, nodeStruct* child) {
+    if (parent == NULL) {
+        // Manejo del error: tal vez loguear, retornar, o alguna acción adecuada
+        printf("Error: parent es NULL.\n");
+        return;  // O algún otro comportamiento de manejo de error
+    }
     if (!parent->child) {
         parent->child = child;
     } else {
@@ -71,17 +76,6 @@ char* get_path(nodeStruct* node) {
     }
 }
 
-// void print_path(nodeStruct* node) {
-//     if (node->parent) {
-//         print_path(node->parent);
-//     }
-//     if (strlen(node->name) > 0) {
-//         if(node->name[0] != '/'){
-//             printf("/%s", node->name);
-//         }
-//     }
-// }
-
 nodeStruct* find_node(nodeStruct* parent, const char* name) {
     nodeStruct* child = parent->child;
     while (child) {
@@ -94,28 +88,7 @@ nodeStruct* find_node(nodeStruct* parent, const char* name) {
 }
 
 
-// void decodePath(char *path) {
-//     // Encontrar la primera ocurrencia del separador '/'
-//     char *separator = strchr(path, '/');
-    
-//     if (separator != NULL) {
-//         // Terminar el primer segmento con '\0'
-//         *separator = '\0';
-        
-//         // Imprimir el primer segmento
-//         printf("%s\n", path);
-        
-//         // Llamar recursivamente para el resto del string
-//         decodePath(separator + 1);
-//     } else {
-//         // Imprimir el último segmento
-//         printf("%s\n", path);
-//     }
-// }
-
-
 nodeStruct* change_single_directory(nodeStruct* current, const char* name, TYPEFILE targetType ){ 
-    // printf("Cambiando a %s\n", name);
     if (strcmp(name, "..") == 0) {
         return current->parent ? current->parent : current;
     } else if (strcmp(name, ".") == 0) {
@@ -126,7 +99,6 @@ nodeStruct* change_single_directory(nodeStruct* current, const char* name, TYPEF
         }
         nodeStruct* target = find_node(current, name);
         if (target && target->type == targetType){ 
-            // printf("Cambio a %s\n", target->name);
             return target;
         }
     }
@@ -142,23 +114,18 @@ nodeStruct* change_complex_directory(nodeStruct* current, nodeStruct* root, cons
     char *separator = strchr(path, '/');
     
     if (separator != NULL) {
-        // Terminar el primer segmento con '\0'
+       
         *separator = '\0';
         
-        // Imprimir el primer segmento
-        // printf("HOLA %s\n", path);
-        // printf("%s %ld\n", path, strlen(path));
         nodeStruct* new_current;
         if (strlen(path) == 0){
             new_current = root;
         }else{
-            // printf("HOLA 1%s\n", path);
             new_current = change_single_directory(current, path, DIR);
         }
         
         return change_complex_directory(new_current, root, separator + 1);
     } else {
-        // printf("Else %s\n", path);
         return change_single_directory(current, path, DIR);
     }
 }
@@ -230,7 +197,7 @@ nodeStruct* create_nested_node(nodeStruct* current, nodeStruct* root, const char
     }
 }
 
-void write_fs(nodeStruct* root, FILE* file, char *path) {
+void write_fs(nodeStruct* root, FILE* file) {
     if (!root) return;
     
     char time_str[20];
@@ -238,8 +205,9 @@ void write_fs(nodeStruct* root, FILE* file, char *path) {
     
     strftime(time_str, sizeof(time_str), "%H:%M-%d/%m/%Y", localtime(&root->creation_time));
     fprintf(file, "%s\t%s\t%s\t%s\n", root->name, time_str, root->type == DIR ? "D" : "F", new_path);
+    free(new_path);
 
-    write_fs(root->child, file, path);
+    write_fs(root->child, file);
 
-    write_fs(root->sibling, file, path);
+    write_fs(root->sibling, file);
 }
