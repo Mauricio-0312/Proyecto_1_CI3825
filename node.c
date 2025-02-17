@@ -67,8 +67,6 @@ void print_path(nodeStruct* node) {
     if (strlen(node->name) > 0) {
         if(node->name[0] != '/'){
             printf("/%s", node->name);
-        }else{
-            printf("%s", node->name);
         }
     }
 }
@@ -105,15 +103,18 @@ nodeStruct* find_node(nodeStruct* parent, const char* name) {
 // }
 
 
-nodeStruct* change_single_directory(nodeStruct* current, const char* name) {
+nodeStruct* change_single_directory(nodeStruct* current, const char* name, TYPEFILE targetType ){ 
     // printf("Cambiando a %s\n", name);
     if (strcmp(name, "..") == 0) {
         return current->parent ? current->parent : current;
     } else if (strcmp(name, ".") == 0) {
         return current;
     } else {
+        if(current == NULL){
+            return NULL;
+        }
         nodeStruct* target = find_node(current, name);
-        if (target && target->type == DIR) {
+        if (target && target->type == targetType){ 
             // printf("Cambio a %s\n", target->name);
             return target;
         }
@@ -121,7 +122,37 @@ nodeStruct* change_single_directory(nodeStruct* current, const char* name) {
     return NULL;
 }
 
-nodeStruct* change_complex_directory(nodeStruct* current, nodeStruct* root, const char* path) {
+// nodeStruct* change_complex_directory(nodeStruct* current, nodeStruct* root, const char* path) {
+//     // Encontrar la primera ocurrencia del separador '/'
+//     if (strlen(path) == 0){
+//         return current;
+//     }
+
+//     char *separator = strchr(path, '/');
+    
+//     if (separator != NULL) {
+//         // Terminar el primer segmento con '\0'
+//         *separator = '\0';
+        
+//         // Imprimir el primer segmento
+//         // printf("HOLA %s\n", path);
+//         // printf("%s %ld\n", path, strlen(path));
+//         nodeStruct* new_current;
+//         if (strlen(path) == 0){
+//             new_current = root;
+//         }else{
+//             // printf("HOLA 1%s\n", path);
+//             new_current = change_single_directory(current, path);
+//         }
+        
+//         return change_complex_directory(new_current, root, separator + 1);
+//     } else {
+//         // printf("Else %s\n", path);
+//         return change_single_directory(current, path);
+//     }
+// }
+
+nodeStruct* find_nested_node(nodeStruct* current, nodeStruct* root, const char* path, TYPEFILE targetType) {
     // Encontrar la primera ocurrencia del separador '/'
     if (strlen(path) == 0){
         return current;
@@ -133,21 +164,17 @@ nodeStruct* change_complex_directory(nodeStruct* current, nodeStruct* root, cons
         // Terminar el primer segmento con '\0'
         *separator = '\0';
         
-        // Imprimir el primer segmento
-        // printf("HOLA %s\n", path);
-        // printf("%s %ld\n", path, strlen(path));
+        
         nodeStruct* new_current;
         if (strlen(path) == 0){
             new_current = root;
         }else{
-            // printf("HOLA 1%s\n", path);
-            new_current = change_single_directory(current, path);
+            new_current = change_single_directory(current, path, DIR);
         }
         
-        return change_complex_directory(new_current, root, separator + 1);
+        return find_nested_node(new_current, root, separator + 1);
     } else {
-        // printf("Else %s\n", path);
-        return change_single_directory(current, path);
+        return change_single_directory(current, path, targetType);
     }
 }
 

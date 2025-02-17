@@ -174,7 +174,11 @@ int main(int argc, char *argv[]) {
             break;
         // pwd
         } else if (strncmp(input, "pwd", 3) == 0) {
-            print_path(current);
+            if (current == root) {
+                printf("/");
+            } else {
+                print_path(current);
+            }
             printf("\n");
         // ls
         } else if (strncmp(input, "ls", 2) == 0) {
@@ -191,8 +195,9 @@ int main(int argc, char *argv[]) {
             }
         // touch
         } else if (strncmp(input, "touch ", 6) == 0) {
-            char* file_name = input + 6;
-            if (find_node(current, file_name)) {
+            char* file_path = input + 6;
+            nodeStruct* file = find_nested_node(current, root, file_path, FIL);
+            if (file) {
                 printf("El archivo ya existe.\n");
             } else {
                 nodeStruct* new_file = create_node(file_name, FIL);
@@ -201,7 +206,7 @@ int main(int argc, char *argv[]) {
         // cd
         } else if (strncmp(input, "cd ", 3) == 0) {
             char* path = input + 3;
-            nodeStruct* new_dir = change_complex_directory(current, root, path);
+            nodeStruct* new_dir = find_nested_node(current, root, path, DIR);
             if (new_dir) {
                 current = new_dir;
             } else {
@@ -209,21 +214,34 @@ int main(int argc, char *argv[]) {
             }
         // rm
         } else if (strncmp(input, "rm ", 3) == 0) {
-            char* file_name = input + 3;
-            nodeStruct* file = find_node(current, file_name);
-            if (file && file->type == FIL) {
-                delete_node(file);
+            char* file_path = input + 3;
+            nodeStruct* file = find_nested_node(current, root, file_path, FIL);
+            if (file ) {
+                if (file->type == DIR) {
+                    printf("No se puede eliminar un directorio con 'rm'.\n");
+                } else {
+                    delete_node(file);
+                }
             } else {
-                printf("Archivo no encontrado o es un directorio.\n");
+                printf("Archivo no encontrado.\n");
             }
         // rmdir
         } else if (strncmp(input, "rmdir ", 6) == 0) {
-            char* dir_name = input + 6;
-            nodeStruct* dir = find_node(current, dir_name);
-            if (dir && dir->type == DIR && !dir->child) {
-                delete_node(dir);
+            char* dir_path = input + 6;
+            nodeStruct* dir = find_nested_node(current, root, dir_path, DIR)
+            if (dir) {
+                if(dir->type == DIR ){
+
+                    if(!dir->child){
+                        delete_node(dir);
+                    }else{
+                        printf("Directorio no está vacío.\n");
+                    }
+                }else{
+                    printf("No se puede eliminar un archivo con 'rmdir'.\n");
+                }
             } else {
-                printf("Directorio no encontrado o no está vacío.\n");
+                printf("Directorio no encontrado\n");
             }
         // wrts
         } else if (strncmp(input, "wrts ", 5) == 0) {
