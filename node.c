@@ -21,6 +21,7 @@ struct nodeStruct {
     time_t creation_time;
 };
 
+// Funcion que crea un nodo dado un nombre y el tipo de archivo
 nodeStruct* create_node(const char* name, TYPEFILE type) {
     nodeStruct* new_node = (nodeStruct*)malloc(sizeof(nodeStruct));
     new_node->name = strdup(name);
@@ -30,6 +31,7 @@ nodeStruct* create_node(const char* name, TYPEFILE type) {
     return new_node;
 }
 
+// Funcion que agrega un nodo hijo a un nodo
 void add_child(nodeStruct* parent, nodeStruct* child) {
     if (parent == NULL) {
         // Manejo del error: tal vez loguear, retornar, o alguna acción adecuada
@@ -48,6 +50,7 @@ void add_child(nodeStruct* parent, nodeStruct* child) {
     child->parent = parent;
 }
 
+// Funcion que elimina un nodo
 void delete_node(nodeStruct* node) {
     if (node->parent) {
         nodeStruct* sibling = node->parent->child;
@@ -64,6 +67,7 @@ void delete_node(nodeStruct* node) {
     free(node);
 }
 
+// Funcion que lista los elementos de un directorio
 void list_directory(nodeStruct* dir, int detailed) {
     if (dir->type != DIR) {
         printf("%s no es un directorio.\n", dir->name);
@@ -81,6 +85,8 @@ void list_directory(nodeStruct* dir, int detailed) {
         child = child->sibling;
     }
 }
+
+// Funcion que devuelve el path de un nodo
 char* get_path(nodeStruct* node) {
     if (node->parent) {
         char* parent_path = get_path(node->parent);
@@ -93,6 +99,7 @@ char* get_path(nodeStruct* node) {
     }
 }
 
+// Funcion para encontrar un nodo en un directorio dado el nombre del nodo
 nodeStruct* find_node(nodeStruct* parent, const char* name) {
     nodeStruct* child = parent->child;
     while (child) {
@@ -104,7 +111,7 @@ nodeStruct* find_node(nodeStruct* parent, const char* name) {
     return NULL;
 }
 
-
+// Funcion para cambiar de directorio dado el nombre del directorio
 nodeStruct* change_single_directory(nodeStruct* current, const char* name, TYPEFILE targetType ){ 
     if (strcmp(name, "..") == 0) {
         return current->parent ? current->parent : current;
@@ -122,6 +129,7 @@ nodeStruct* change_single_directory(nodeStruct* current, const char* name, TYPEF
     return NULL;
 }
 
+// Funcion para cambiar de directorio dado un path
 nodeStruct* change_complex_directory(nodeStruct* current, nodeStruct* root, const char* path) {
     // Encontrar la primera ocurrencia del separador '/'
     if (strlen(path) == 0){
@@ -147,6 +155,7 @@ nodeStruct* change_complex_directory(nodeStruct* current, nodeStruct* root, cons
     }
 }
 
+// Funcion que encuentra un nodo dado un path
 nodeStruct* find_nested_node(nodeStruct* current, nodeStruct* root, const char* path, TYPEFILE targetType) {
     // Encontrar la primera ocurrencia del separador '/'
     if (strlen(path) == 0){
@@ -174,6 +183,7 @@ nodeStruct* find_nested_node(nodeStruct* current, nodeStruct* root, const char* 
     }
 }
 
+// Funcion para crear un nodo dado un path
 nodeStruct* create_nested_node(nodeStruct* current, nodeStruct* root, const char* path, TYPEFILE targetType) {
     // Encontrar la primera ocurrencia del separador '/'
     if (strlen(path) == 0){
@@ -214,11 +224,12 @@ nodeStruct* create_nested_node(nodeStruct* current, nodeStruct* root, const char
     }
 }
 
-// Funcion para esc
+// Funcion para escribir un archivo con la descripcion actual del sistema de archivos.
 void write_fs(nodeStruct* root, FILE* file) {
     if (!root) return;
     
     char time_str[20];
+    // Se obtiene el path del node
     char *new_path = root->parent != NULL ? get_path(root) : strdup("/");
     
     strftime(time_str, sizeof(time_str), "%H:%M-%d/%m/%Y", localtime(&root->creation_time));
