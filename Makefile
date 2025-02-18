@@ -30,3 +30,6 @@ $(PROG):	$(SRCOBJS)
 
 .c.o:
 		$(CC) -c $(CFLAGS) $< -o $@
+
+clean: 
+		rm -f $(PROG) *~
