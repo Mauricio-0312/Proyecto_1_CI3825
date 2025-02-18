@@ -249,6 +249,11 @@ int main(int argc, char *argv[]) {
             // Buscamos el directorio y en caso que exista, se elimina
             nodeStruct* dir = find_nested_node(current, root, dir_path, DIR);
             if (dir && dir != root){
+                if (dir == current)
+                {
+                    printf("Error: No se puede eliminar el directorio actual\n");
+                }
+                
                 removeDIR(dir);
             }else{
                 printf("Error: Directorio no encontrado\n");
