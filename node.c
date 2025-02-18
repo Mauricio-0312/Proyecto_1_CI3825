@@ -1,3 +1,9 @@
+// Proyecto 1: Simulando la Administracion de un Sistema de Archivos UNIX
+// Mauricio Fragachan 20-10265
+// Jesus Gutierrez 20-10332
+// Definicion de la estructura NodeStruct y funciones auxiliares
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,7 +19,7 @@ struct nodeStruct {
     struct nodeStruct* sibling;
     char* name;
     time_t creation_time;
-}; //nodeStruct
+};
 
 nodeStruct* create_node(const char* name, TYPEFILE type) {
     nodeStruct* new_node = (nodeStruct*)malloc(sizeof(nodeStruct));
@@ -208,6 +214,7 @@ nodeStruct* create_nested_node(nodeStruct* current, nodeStruct* root, const char
     }
 }
 
+// Funcion para esc
 void write_fs(nodeStruct* root, FILE* file) {
     if (!root) return;
     
@@ -216,36 +223,38 @@ void write_fs(nodeStruct* root, FILE* file) {
     
     strftime(time_str, sizeof(time_str), "%H:%M-%d/%m/%Y", localtime(&root->creation_time));
     fprintf(file, "%s\t%s\t%s\t%s\n", root->name, time_str, root->type == DIR ? "D" : "F", new_path);
+
+    // Liberar memoria
     free(new_path);
 
     write_fs(root->child, file);
-
     write_fs(root->sibling, file);
 }
 
+// Funcion para limpiar el arbol de nodos
 void clean(nodeStruct *node) { 
     
     if(node != NULL){
 
-       
         clean(node->child);
-       
         clean(node->sibling);
-
         
+        // Liberar memoria
         free(node->name);
         free(node);
     }
 }
 
+// Funcion para eliminar un Archivo
 void removeFIL(nodeStruct *node){
-    printf("Borrando archivo: \n");
-    printf("%s\n", node->name); 
+    
     delete_node(node);
 }
 
+// Funcion para eliminar un Directorio
 void removeDIR(nodeStruct* node){
     
+    // Si el directorio no esta vacio, se elimina
     if(!node->child){
         delete_node(node);
 
